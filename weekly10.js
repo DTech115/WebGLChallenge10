@@ -64,9 +64,33 @@ window.addEventListener(
     (e) => keys[e.key] = false
 );
 
-
+// ----------------------------------------------------
 // TEXTURE LOADER
+// ----------------------------------------------------
 const loader = new THREE.TextureLoader();
+
+// ----------------------------------------------------
+// Raycaster
+// ----------------------------------------------------
+const raycaster = new THREE.Raycaster();
+
+// ----------------------------------------------------
+// AUDIO
+// ----------------------------------------------------
+const listener = new THREE.AudioListener();
+camera.add(listener);
+
+const audioLoader = new THREE.AudioLoader();
+
+
+const interactSound = new THREE.Audio(listener);
+audioLoader.load(
+    "audio/victory.mp3",
+    function(buffer) {
+        interactSound.setBuffer(buffer);
+        interactSound.setVolume(0.5);
+    }
+);
 
 
 // ====================================================
@@ -493,6 +517,7 @@ let playerMixer;
 let playerIdleAction;
 let playerWalkAction;
 let playerCurrentAction;
+let waffle;
 
 // PLAYER [donkey]
 modelLoader.load('models/donkey.glb', (gltf) => {
@@ -645,7 +670,7 @@ modelLoader.load('models/chicken.glb', (gltf) => {
 
 // waffle
 modelLoader.load('models/waffle.glb', (gltf) => {
-    const waffle = gltf.scene;
+    waffle = gltf.scene;
     waffle.position.set(15.5, 0.8, 0);
     waffle.rotation.z = -Math.PI / 3;
     scene.add(waffle);
@@ -756,6 +781,35 @@ function updateWalker(walker, dt) {
         walker.model.position.copy(nextPos);
     }
 }
+
+window.addEventListener(
+    "keydown",
+    (event) => {
+        if(event.key === "e") {
+            checkInteraction();
+        }
+    }
+);
+
+function checkInteraction() {
+    const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(player.quaternion);
+
+    raycaster.set(player.position, direction);
+
+    const hits = raycaster.intersectObject(waffle, true);
+
+    if(hits.length > 0) {
+        // openChest();
+        interactSound.play();
+        setMessage( "WAFFLE Collected!");
+    }
+}
+
+function setMessage(text) {
+    document.getElementById("message").innerHTML = text;
+}
+
+
 
 
 // ----------------------------------------------------
