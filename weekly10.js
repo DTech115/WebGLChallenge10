@@ -799,10 +799,13 @@ function checkInteraction() {
     const hits = raycaster.intersectObject(waffle, true);
 
     if(hits.length > 0) {
-        // openChest();
-        interactSound.play();
-        setMessage( "WAFFLE Collected!");
+        collectWaffle();
     }
+}
+
+function collectWaffle() {
+    interactSound.play();
+    setMessage( "WAFFLE Collected!");
 }
 
 function setMessage(text) {
