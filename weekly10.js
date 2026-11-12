@@ -27,7 +27,15 @@ const camera = new THREE.PerspectiveCamera(
     1000
 );
 
-camera.position.set(20, 15, 20);
+camera.position.set(0, 10, 23);
+
+// function updateCamera()
+// {
+//     camera.position.x = player.position.x;
+//     camera.position.y = 7;
+//     camera.position.z = player.position.z + 10;
+//     camera.lookAt(player.position);
+// }
 
 // OBSTACLES LIST
 const obstacles = [];
@@ -792,13 +800,17 @@ window.addEventListener(
 );
 
 function checkInteraction() {
-    const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(player.quaternion);
 
+    const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(player.quaternion);
     raycaster.set(player.position, direction);
 
     const hits = raycaster.intersectObject(waffle, true);
-
+    if (hits.length <= 0) {
+        return;
+    }
     if(hits.length > 0) {
+        scene.remove(waffle);
+        waffle = null;
         collectWaffle();
     }
 }
@@ -806,6 +818,8 @@ function checkInteraction() {
 function collectWaffle() {
     interactSound.play();
     setMessage( "WAFFLE Collected!");
+    // score++;
+    // updateScore();
 }
 
 function setMessage(text) {
@@ -909,6 +923,10 @@ function animate() {
 
     controls.update();
 
+    // if (player) {
+    //     updateCamera();
+    // }
+
     const delta = clock.getDelta();
     for (const mixer of mixers) {
         mixer.update(delta);
@@ -922,7 +940,7 @@ function animate() {
             king.position.z += kingDirection * kingSpeed * delta;
             
             kingBox.setFromObject(king);
-
+            
             for (const obstacle of obstacles) {
                 obstacleBox.setFromObject(obstacle);
                 obstacleBox.expandByScalar(-5);
