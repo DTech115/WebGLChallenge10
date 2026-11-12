@@ -803,16 +803,16 @@ function checkInteraction() {
 
     const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(player.quaternion);
     raycaster.set(player.position, direction);
+    raycaster.far = 3;
 
     const hits = raycaster.intersectObject(waffle, true);
+
     if (hits.length <= 0) {
         return;
     }
-    if(hits.length > 0) {
-        scene.remove(waffle);
-        waffle = null;
-        collectWaffle();
-    }
+    scene.remove(waffle);
+    waffle = null;
+    collectWaffle();
 }
 
 function collectWaffle() {
@@ -984,10 +984,12 @@ function animate() {
         if(keys["ArrowLeft"])
         {
             player.rotation.y += 2.5 * delta;
-        }
+            if (playerCollision()) player.rotation.y -= 2.5 * delta;
+         }
         if(keys["ArrowRight"])
         {
             player.rotation.y -= 2.5 * delta;
+            if (playerCollision()) player.rotation.y += 2.5 * delta;
         }
         
         const forward = (keys['ArrowUp'] ? 1 : 0) - (keys['ArrowDown'] ? 1 : 0);
