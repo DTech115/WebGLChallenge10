@@ -27,15 +27,29 @@ const camera = new THREE.PerspectiveCamera(
     1000
 );
 
-camera.position.set(0, 10, 23);
 
-// function updateCamera()
-// {
-//     camera.position.x = player.position.x;
-//     camera.position.y = 7;
-//     camera.position.z = player.position.z + 10;
-//     camera.lookAt(player.position);
-// }
+const lastPlayerPos = new THREE.Vector3();
+const moved = new THREE.Vector3();
+let cameraStart = false;
+
+function updateCamera()
+{
+    if (!cameraStart) {
+        controls.target.copy(player.position).y += 1.5;
+        camera.position.set(player.position.x, 7, player.position.z + 10);
+        lastPlayerPos.copy(player.position);
+        cameraStart = true;
+        return;
+    }
+
+    // how far did the player move since last frame?
+    moved.copy(player.position).sub(lastPlayerPos);
+    lastPlayerPos.copy(player.position);
+
+    // slide the camera and its orbit point along with the player
+    camera.position.add(moved);
+    controls.target.add(moved);
+}
 
 // OBSTACLES LIST
 const obstacles = [];
@@ -921,11 +935,11 @@ function animate() {
 
     requestAnimationFrame(animate);
 
-    controls.update();
+    if (player) {
+        updateCamera();
+    }
 
-    // if (player) {
-    //     updateCamera();
-    // }
+    controls.update();
 
     const delta = clock.getDelta();
     for (const mixer of mixers) {
@@ -985,7 +999,7 @@ function animate() {
         {
             player.rotation.y += 2.5 * delta;
             if (playerCollision()) player.rotation.y -= 2.5 * delta;
-         }
+        }
         if(keys["ArrowRight"])
         {
             player.rotation.y -= 2.5 * delta;
