@@ -539,6 +539,10 @@ let playerMixer;
 let playerIdleAction;
 let playerWalkAction;
 let playerCurrentAction;
+let isPickingUp;
+let pickupMidpointReached;
+let pickupAction;
+let pendingWaffle;
 let waffles = [];
 let score = 0;
 
@@ -552,6 +556,8 @@ modelLoader.load('models/donkey.glb', (gltf) => {
     playerMixer = new THREE.AnimationMixer(player);
     playerIdleAction = playerMixer.clipAction(gltf.animations[12]);
     playerWalkAction = playerMixer.clipAction(gltf.animations[9]);
+    pickupAction = playerMixer.clipAction(gltf.animations[3]);
+    playerMixer.addEventListener('finished', finishPickupAnimation);
 
     playerIdleAction.play();
     playerCurrentAction = playerIdleAction;
@@ -829,7 +835,7 @@ window.addEventListener(
 );
 
 function checkInteraction() {
-    if (!player) {
+    if (!player || isPickingUp) {
         return;
     }
 
@@ -855,9 +861,9 @@ function checkInteraction() {
         return;
     }
 
-    scene.remove(waffle);
-    waffles.splice(waffles.indexOf(waffle), 1);
-    collectWaffle();
+    if (playPickupAnimation()) {
+        pendingWaffle = waffle;
+    }
 }
 
 function collectWaffle() {
@@ -880,7 +886,63 @@ function setMessage(text) {
     document.getElementById("message").innerHTML = text;
 }
 
+// Start the one-shot animation used when the player reaches for a waffle.
+function playPickupAnimation()
+{
+    if(!pickupAction)
+        return false;
 
+    playerCurrentAction?.fadeOut(0.1);
+    isPickingUp = true;
+    pickupMidpointReached = false;
+    pickupAction.reset();
+    pickupAction.setLoop(THREE.LoopOnce, 1);
+    pickupAction.clampWhenFinished = true;
+    pickupAction.fadeIn(0.1).play();
+    playerCurrentAction = pickupAction;
+    return true;
+}
+
+// Register a pickup at the midpoint of its reach animation.
+function updatePickupProgress()
+{
+    if(!isPickingUp || !pickupAction || pickupMidpointReached)
+        return;
+
+    const midpoint = pickupAction.getClip().duration / 2;
+    if(pickupAction.time >= midpoint)
+        finishPickup();
+}
+
+
+// Return to idle when the one-shot pickup animation ends.
+function finishPickupAnimation(event)
+{
+    if(event.action !== pickupAction)
+        return;
+
+    if (pickupAction.time >= pickupAction.getClip().duration / 2) {
+        finishPickup();
+    }
+    isPickingUp = false;
+    setAction(playerIdleAction);
+}
+
+function finishPickup()
+{
+    if(pickupMidpointReached)
+        return;
+
+    pickupMidpointReached = true;
+    if (!pendingWaffle) {
+        return;
+    }
+
+    scene.remove(pendingWaffle);
+    waffles.splice(waffles.indexOf(pendingWaffle), 1);
+    pendingWaffle = null;
+    collectWaffle();
+}
 
 
 // ----------------------------------------------------
@@ -985,6 +1047,7 @@ function animate() {
     for (const mixer of mixers) {
         mixer.update(delta);
     }
+    updatePickupProgress();
 
     const dt = Math.min(delta, 0.1);
     walkers.forEach(walker => updateWalker(walker, dt));
@@ -1031,7 +1094,7 @@ function animate() {
         }
     }
 
-    if (player) {
+    if (player && !isPickingUp) {
         // let dx = 0;
         // let dz = 0;
         
