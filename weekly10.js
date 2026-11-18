@@ -116,9 +116,11 @@ audioLoader.load(
 const walkingSound = new THREE.Audio(listener);
 audioLoader.load("audio/walking.mp3", function(buffer) {
     walkingSound.setBuffer(buffer);
-    if(moving)
-        walkingSound.play();
 });
+const waffleSound = new THREE.Audio(listener);
+audioLoader.load("audio/waffles.mp3", function(buffer) {
+    waffleSound.setBuffer(buffer);
+})
 
 
 // ====================================================
@@ -906,6 +908,7 @@ function playPickupAnimation()
     pickupAction.clampWhenFinished = true;
     pickupAction.fadeIn(0.1).play();
     playerCurrentAction = pickupAction;
+    waffleSound.play();
     return true;
 }
 
@@ -1136,6 +1139,9 @@ function animate() {
 
         if (moving) {
             walkingSound.play();
+        }
+        if (!moving) {
+            walkingSound.stop();
         }
 
         const pureTurn = forward === 0 && turning;
