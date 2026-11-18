@@ -707,7 +707,7 @@ modelLoader.load('models/chicken.glb', (gltf) => {
 
 // waffleS
 modelLoader.load('models/waffle.glb', (gltf) => {
-    const spawns = [[15.5, 0.8, 0, (-Math.PI / 3)], [-4, 0.9, 0.7, 0], [-23.5, 0.8, -26, Math.PI / 5]];
+    const spawns = [[15.5, 0.8, 0, (-Math.PI / 3)], [6, 1.1, 1.5, Math.PI / 2], [-23.5, 0.8, -26, Math.PI / 5]];
 
     spawns.forEach(([x, y, z, r]) => {
         const waffle = SkeletonUtils.clone(gltf.scene);
@@ -843,7 +843,7 @@ function checkInteraction() {
     const origin = player.position.clone();
     origin.y += 1;
     raycaster.set(origin, direction);
-    raycaster.far = 5;
+    raycaster.far = 4;
 
     const hit = raycaster.intersectObjects(waffles, true)[0];
     if (!hit) {
