@@ -104,7 +104,7 @@ camera.add(listener);
 
 const audioLoader = new THREE.AudioLoader();
 
-
+// victory chime on waffle eaten
 const interactSound = new THREE.Audio(listener);
 audioLoader.load(
     "audio/victory.mp3",
@@ -113,13 +113,25 @@ audioLoader.load(
         interactSound.setVolume(0.5);
     }
 );
+// walking sounds for donkey
 const walkingSound = new THREE.Audio(listener);
 audioLoader.load("audio/walking.mp3", function(buffer) {
     walkingSound.setBuffer(buffer);
 });
+// waffle voice line for donkey upon eating
 const waffleSound = new THREE.Audio(listener);
 audioLoader.load("audio/waffles.mp3", function(buffer) {
     waffleSound.setBuffer(buffer);
+})
+// shrek music
+const shrekMusic = new THREE.PositionalAudio(listener);
+audioLoader.load("audio/toothless.mp3", function(buffer) {
+    shrekMusic.setBuffer(buffer);
+    shrekMusic.setLoop(true);
+    shrekMusic.setVolume(10);
+    shrekMusic.setMaxDistance(20);
+    // shrekMusic.setRolloffFactor(1);
+    shrekMusic.play();
 })
 
 
@@ -658,6 +670,9 @@ modelLoader.load('models/shrekToothlessDance.glb', (gltf) => {
     shrek.position.set(0, 7, -12);
     shrek.scale.set(2, 2, 2);
     scene.add(shrek);
+
+    // attach the song to him!
+    shrek.add(shrekMusic);
 
     const mixer = new THREE.AnimationMixer(shrek);
     const action = mixer.clipAction(gltf.animations[0]);
