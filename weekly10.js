@@ -509,7 +509,7 @@ function addHitbox(x, z, width, depth, height = 4) {
     obstacles.push(block);
 }
 
-addHitbox(-5, 3, 5, 4);          // market stand
+addHitbox(-5, 3, 2, 6);          // market stand
 addHitbox(-17, 26, 12, 14, 8);   // inn
 addHitbox(18, 29, 34, 9, 8);     // stable (covers the horses too)
 addHitbox(3, -10, 1.2, 1.2);     // knight
@@ -539,7 +539,8 @@ let playerMixer;
 let playerIdleAction;
 let playerWalkAction;
 let playerCurrentAction;
-let waffle;
+let waffles = [];
+let score = 0;
 
 // PLAYER [donkey]
 modelLoader.load('models/donkey.glb', (gltf) => {
@@ -690,13 +691,27 @@ modelLoader.load('models/chicken.glb', (gltf) => {
     })
 });
 
-// waffle
+// // waffle
+// modelLoader.load('models/waffle.glb', (gltf) => {
+//     waffle = gltf.scene;
+//     waffle.position.set(15.5, 0.8, 0);
+//     waffle.rotation.z = -Math.PI / 3;
+//     scene.add(waffle);
+// });
+
+// waffleS
 modelLoader.load('models/waffle.glb', (gltf) => {
-    waffle = gltf.scene;
-    waffle.position.set(15.5, 0.8, 0);
-    waffle.rotation.z = -Math.PI / 3;
-    scene.add(waffle);
+    const spawns = [[15.5, 0.8, 0, (-Math.PI / 3)], [-4, 0.9, 0.7, 0], [-23.5, 0.8, -26, Math.PI / 5]];
+
+    spawns.forEach(([x, y, z, r]) => {
+        const waffle = SkeletonUtils.clone(gltf.scene);
+        waffle.position.set(x, y, z);
+        waffle.rotation.z = r;
+        scene.add(waffle);
+        waffles.push(waffle)
+    })
 });
+
 
 // stable
 modelLoader.load('models/stable.glb', (gltf) => {
@@ -814,27 +829,48 @@ window.addEventListener(
 );
 
 function checkInteraction() {
-
-    const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(player.quaternion);
-    raycaster.set(player.position, direction);
-    raycaster.far = 3;
-
-    const hits = raycaster.intersectObject(waffle, true);
-
-    if (hits.length <= 0) {
+    if (!player) {
         return;
     }
+
+    const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(player.quaternion);
+    const origin = player.position.clone();
+    origin.y += 1;
+    raycaster.set(origin, direction);
+    raycaster.far = 5;
+
+    const hit = raycaster.intersectObjects(waffles, true)[0];
+    if (!hit) {
+        return;
+    }
+
+    const waffle = waffles.find(candidate => {
+        let object = hit.object;
+        while (object && object !== candidate) {
+            object = object.parent;
+        }
+        return object === candidate;
+    });
+    if (!waffle) {
+        return;
+    }
+
     scene.remove(waffle);
-    waffle = null;
+    waffles.splice(waffles.indexOf(waffle), 1);
     collectWaffle();
 }
 
 function collectWaffle() {
     interactSound.play();
     setMessage( "WAFFLE Collected!");
-    // score++;
-    // updateScore();
+    score++;
+    setScore(score);
 }
+
+function setScore(score) {
+    document.getElementById("score").innerHTML = score;
+}
+
 
 function setMessage(text) {
     document.getElementById("message").innerHTML = text;
