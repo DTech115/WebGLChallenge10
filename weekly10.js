@@ -113,6 +113,12 @@ audioLoader.load(
         interactSound.setVolume(0.5);
     }
 );
+const walkingSound = new THREE.Audio(listener);
+audioLoader.load("audio/walking.mp3", function(buffer) {
+    walkingSound.setBuffer(buffer);
+    if(moving)
+        walkingSound.play();
+});
 
 
 // ====================================================
@@ -1097,7 +1103,8 @@ function animate() {
     if (player && !isPickingUp) {
         // let dx = 0;
         // let dz = 0;
-        
+
+
         if(keys["ArrowLeft"])
         {
             player.rotation.y += 2.5 * delta;
@@ -1126,6 +1133,10 @@ function animate() {
 
         const turning = keys['ArrowLeft'] || keys['ArrowRight'];
         const moving = forward !== 0 || !!turning;
+
+        if (moving) {
+            walkingSound.play();
+        }
 
         const pureTurn = forward === 0 && turning;
         playerWalkAction.timeScale = (forward < 0 ? -1 : 1) * (pureTurn ? 0.5 : 1);
