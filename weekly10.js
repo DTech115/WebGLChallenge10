@@ -74,7 +74,10 @@ const controls = new OrbitControls(
 
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.target.set(0, 3, -2);
+controls.enablePan = false;
+controls.minDistance = 4;
+controls.maxDistance = 20;
+controls.maxPolarAngle = Math.PI / 2 - 0.05;
 
 // KEY CONTROLS
 window.addEventListener(
