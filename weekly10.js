@@ -862,9 +862,13 @@ function checkInteraction() {
 
 function collectWaffle() {
     interactSound.play();
-    setMessage( "WAFFLE Collected!");
     score++;
     setScore(score);
+    if (score >= 3) {
+        setMessage( "YOU GOT ALL THE WAFFLES! Mmmmmm");
+    } else {
+        setMessage( "WAFFLE Collected!");
+    }
 }
 
 function setScore(score) {
@@ -1064,7 +1068,6 @@ function animate() {
         playerWalkAction.timeScale = (forward < 0 ? -1 : 1) * (pureTurn ? 0.5 : 1);
         setAction(moving ? playerWalkAction : playerIdleAction);
     }
-
 
     renderer.render(scene, camera);
 }
